@@ -19,6 +19,7 @@ jobs:
       uses: azure/login@v2
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+        subscription-id: 'a885c71b-3924-4721-87b5-06b3979de425'
 
     - name: Connect to Azure Container Registry
       run: az acr login --name ledgerregistrybety2026
