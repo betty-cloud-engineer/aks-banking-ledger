@@ -1,0 +1,55 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: banking-ledger-deployment
+  labels:
+    app: banking-ledger
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: banking-ledger
+  template:
+    metadata:
+      labels:
+        app: banking-ledger
+    spec:
+      containers:
+      # Container #1: The Nginx Gateway (Port 80)
+      - name: web-gateway
+        image: ledgerregistrybety2026.azurecr.io/ledger-web:v1
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+
+      # Container #2: The Python Math Engine (Port 8080)
+      - name: app-engine
+        image: ledgerregistrybety2026.azurecr.io/ledger-app:v1
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "250m"
+            memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: banking-ledger-public-svc
+spec:
+  type: LoadBalancer
+  selector:
+    app: banking-ledger
+  ports:
+  - protocol: TCP
+    port: 80          # The public internet accesses your site via port 80
+    targetPort: 80    # The traffic goes directly into Nginx on port 80

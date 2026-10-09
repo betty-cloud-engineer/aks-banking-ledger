@@ -1,0 +1,36 @@
+name: Build and Push Dual-Image Ledger
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-pack:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout Source Code
+      uses: actions/checkout@v4
+
+    - name: Azure CLI Login
+      uses: azure/login@v2
+      with:
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Connect to Azure Container Registry
+      run: az acr login --name myprivateregistry
+
+    # Build Stream #1: The Web Front Gate (Port 80)
+    - name: Bake and Push Nginx Gateway Image
+      run: |
+        az acr build --registry myprivateregistry --image ledger-web:v1 ./web-server
+
+    # Build Stream #2: The Core Python Engine (Port 8080)
+    - name: Bake and Push Python Engine Image
+      run: |
+        az acr build --registry myprivateregistry --image ledger-app:v1 ./app-logic
